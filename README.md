@@ -17,7 +17,7 @@ https://api.abuseipdb.com/api/v2/check
 ## Example
 
 ```sh
-python3 shodan-cve.py --target www.target.com --Key xYtuQsB1IPNd3iEV7bSjVmHKUjPqPXpY
+python3 BrowserOSINT.py --target www.target.com --Key xYtuQsB1IPNd3iEV7bSjVmHKUjPqPXpY
 ```
 ![image](https://user-images.githubusercontent.com/66162160/225937794-4b2a7606-d3a6-4e4c-a7b1-c3edc4c62a64.png)
 
