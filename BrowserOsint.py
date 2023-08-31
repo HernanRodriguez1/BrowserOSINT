@@ -89,7 +89,7 @@ print ('\n'+"==================== INFORMACIÓN VULNERABILIDADES CRIMINALIP======
 
 payload={}
 headers = {
-  "x-api-key": ""     #Añadir API
+  "x-api-key": "4rBsaZBcccqi4spbMfjROOs5UiQpgcKJZFdxRSWcR1Dti0euiHnhodmFHi4e"     #Añadir API
 }
 
 url2 = "https://api.criminalip.io/v1/ip/data?ip="+ (host['ip_str']) +"&full=true"
@@ -119,7 +119,7 @@ params = {
     "verbose": ""
 }
 headers = {
-    "Key": "",     #Añadir API
+    "Key": "82b18f1be07ee74147bd3f864d901169fd1594558a0b84d9f9951eb744c10508f77a8a378b3cceda",     #Añadir API
     "Accept": "application/json"
 }
 
@@ -133,15 +133,28 @@ print ('\n'+"===================OBTENIENDO CORREOS CORPORATIVOS COMPROMETIDOS===
 domain = target
 domain = domain.lstrip("www.") 
 domain = domain.replace("www.", "")  
-
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+}
 
 url = "https://api.proxynova.com/comb"
 query = {"query": domain}
 
-response = requests.get(url, params=query)
+MAX_RETRIES = 3  # Número máximo de reintentos
+RETRY_DELAY = 5  # Tiempo de espera en segundos antes de reintentar
 
-if response.status_code == 200:
-    data = response.json()
-    print(json.dumps(data, indent=4))
+for _ in range(MAX_RETRIES):
+    response = requests.get(url, params=query, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        print(json.dumps(data, indent=4))
+        break  # Romper el bucle si la solicitud es exitosa
+    elif response.status_code == 429:
+        print("Recibido el código 429 - Demasiadas solicitudes. Esperando y reintentando...")
+        time.sleep(RETRY_DELAY)  # Esperar antes de reintentar
+    else:
+        print("Error en la solicitud:", response.status_code)
+        break  # Romper el bucle en otros casos de error
 else:
-    print("Error en la solicitud: ", response.status_code)
+    print("Se agotaron los reintentos. No se pudo obtener una respuesta exitosa.")
