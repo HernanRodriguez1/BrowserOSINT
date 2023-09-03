@@ -4,6 +4,19 @@ import shodan
 import argparse
 import time
 import json
+import socket
+import base64
+import urllib.parse
+from colorama import Fore, Style
+
+print(Fore.RED + """\n
+  ____                                   ___      _       _   
+ | __ ) _ __ _____      _____  ___ _ __ / _ \ ___(_)_ __ | |_ 
+ |  _ \| '__/ _ \ \ /\ / / __|/ _ \ '__| | | / __| | '_ \| __|
+ | |_) | | | (_) \ V  V /\__ \  __/ |  | |_| \__ \ | | | | |_ 
+ |____/|_|  \___/ \_/\_/ |___/\___|_|   \___/|___/_|_| |_|\__| 2.0
+                                                              
+Create By: Hernan Rodriguez | Team Offsec Peru \n""" + Style.RESET_ALL)
 
 parser = argparse.ArgumentParser(description="Script para obtener subdominios y información de Shodan")
 parser.add_argument('--target', help='Nombre de dominio a analizar')
@@ -14,8 +27,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko"
 }
 
-print ('\n'+"===================OBTENIENDO SUBDOMINIOS API HACKERTARGET================"+'\n')
-
+print(Fore.GREEN + '\n'+"===================OBTENIENDO SUBDOMINIOS API HACKERTARGET================"+'\n'+ Style.RESET_ALL)
 target = args.target
 domain = target
 domain = domain.lstrip("www.") 
@@ -24,24 +36,101 @@ request = requests.get('https://api.hackertarget.com/hostsearch/?q=' + domain, h
 response = request.text
 print(response)
 
-print ('\n'+"===================OBTENIENDO CRT.SH================"+'\n')
+print(Fore.GREEN + '\n' + "===================OBTENIENDO CRT.SH================" + '\n'+ Style.RESET_ALL)
 
+def resolve_ip(domain):
+    try:
+        ip_address = socket.gethostbyname(domain)
+        return ip_address
+    except socket.gaierror:
+        return "Inactive"
 
-url = "https://crt.sh/?q={domain}&output=json".format(domain=domain)
-resp = requests.get(url, headers=headers).text
-resp = json.loads(resp)
-result = []
-for item in resp:
-    subdomain = item['name_value']
-    if domain in subdomain and not subdomain.startswith("*.{domain}"):
-        if "*." not in subdomain:
-            if subdomain not in result:
-                result.append(subdomain)
-                print(subdomain)
-pass
+url = f"https://crt.sh/?q={domain}&output=json"
+headers = {"User-Agent": "Mozilla/5.0"}  # User-Agent header to simulate a browser
+
+try:
+    resp = requests.get(url, headers=headers).json()
+    active_hosts = set()  # Use sets to store unique subdomains for active and inactive hosts
+    inactive_hosts = set()
+
+    for item in resp:
+        subdomain = item['name_value']
+
+        # Filter unwanted and duplicate subdomains
+        if domain in subdomain and not subdomain.startswith(f"*.{domain}"):
+            if "*." not in subdomain:
+                try:
+                    ip_address = resolve_ip(subdomain)
+                    if ip_address != "Inactive":
+                        active_hosts.add((subdomain, ip_address))  # Add to the set for active hosts
+                    else:
+                        inactive_hosts.add(subdomain)  # Add to the set for inactive hosts
+                except Exception as e:
+                    print(f"Error resolving {subdomain}: {e}")
+
+    print(Fore.GREEN + "-----------Active Hosts-----------" + Style.RESET_ALL)
+    for subdomain, ip_address in active_hosts:
+        print(f"{subdomain} {ip_address}")
+
+    print(Fore.GREEN + "\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
+    for subdomain in inactive_hosts:
+        print(f"{subdomain}")
+
+except requests.RequestException as e:
+    print(f"Error making the request: {e}")
+except json.JSONDecodeError as e:
+    print(f"Error decoding JSON: {e}")
+
+print(Fore.GREEN +'\n' + "===================OBTENIENDO SUBDOMINIOS CON CENSYS================" + '\n' + Style.RESET_ALL)
+
+def resolve_ip(domain):
+    try:
+        ip_address = socket.gethostbyname(domain)
+        return ip_address
+    except socket.gaierror:
+        return "Inactive"
+
+censys_api_key = "6c0ac3d8-f989-4bdd-b2ab-2def8134e527:ezzyJDBHQRKLPlrDRHRo4AArYrvj7t3O"
+url2 = f"https://search.censys.io/api/v2/certificates/search?q=names={domain}"
+headers3 = {
+    "Authorization": f"Basic {base64.b64encode(censys_api_key.encode()).decode()}"
+}
+
+resp = requests.get(url2, headers=headers3)
+
+if resp.status_code == 200:
+    data = resp.json()
+    result = []
+    for hit in data.get("result", {}).get("hits", []):
+        names = hit.get("names", [])
+        for subdomain in names:
+            if domain in subdomain and not subdomain.startswith(f"*.{domain}"):
+                if "*." not in subdomain:
+                    if subdomain not in result:
+                        result.append(subdomain)
+    active_hosts = []
+    inactive_hosts = []
+
+    for subdomain in result:
+        ip_address = resolve_ip(subdomain)
+        if ip_address == "Inactive":
+            inactive_hosts.append((subdomain, ip_address))
+        else:
+            active_hosts.append((subdomain, ip_address))
+
+    print(Fore.GREEN +"-----------Active Hosts-----------" + Style.RESET_ALL)
+    for host, ip in active_hosts:
+        print(f"{host} {ip}")
+
+    print(Fore.GREEN +"\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
+    for host, ip in inactive_hosts:
+        print(f"{host} {ip}")
+else:
+    print(f"Failed to retrieve data from Censys API. Status code: {resp.status_code}")
+
 #---------------------API SHODAN----------------------- 
 
-print ('\n'+"Recopilación de información con shodan"+'\n')
+print(Fore.GREEN +'\n'+"Recopilación de información con shodan"+'\n'+ Style.RESET_ALL)
 
 try:
     Key = args.Key
@@ -54,7 +143,7 @@ try:
 
     #Obteniendo Banner Grabbing
     host = api.host(hostIP)
-    print ("===================INFORMACIÓN SHODAN================")
+    print(Fore.GREEN +"===================INFORMACIÓN SHODAN================"+ Style.RESET_ALL)
     print('''
 [!] Direccion IP: {}
 [!] Nombre Dominio: {}
@@ -85,7 +174,7 @@ except:
         print ('No se encontraron vulnerabilidades en SHODAN')
 
 
-print ('\n'+"==================== INFORMACIÓN VULNERABILIDADES CRIMINALIP==============="+'\n')
+print(Fore.GREEN +'\n'+"==================== INFORMACIÓN VULNERABILIDADES CRIMINALIP==============="+'\n'+ Style.RESET_ALL)
 
 payload={}
 headers = {
@@ -109,7 +198,7 @@ for item in root["vulnerability"]["data"]:
 
 pass
 
-print ('\n'+"===================OBTENIENDO REPUTACIÓN IP ABUSEIPDB================"+'\n')
+print (Fore.GREEN +'\n'+"===================OBTENIENDO REPUTACIÓN IP ABUSEIPDB================"+'\n'+ Style.RESET_ALL)
 
 
 url = "https://api.abuseipdb.com/api/v2/check"
@@ -128,7 +217,7 @@ print(response.json())
 
 pass
 
-print ('\n'+"===================OBTENIENDO CORREOS CORPORATIVOS COMPROMETIDOS================"+'\n')
+print (Fore.GREEN +'\n'+"===================OBTENIENDO CORREOS CORPORATIVOS COMPROMETIDOS================"+'\n'+ Style.RESET_ALL)
 
 domain = target
 domain = domain.lstrip("www.") 
