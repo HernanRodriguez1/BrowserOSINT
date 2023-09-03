@@ -14,6 +14,13 @@ https://api.abuseipdb.com/api/v2/check
 "Key": ""
 ```
 
+## Add API:
+
+```sh
+https://search.censys.io/api/v2/certificates/search?q=names=
+censys_api_key = "6c0ac3d8-f989-4bdd-b2ab-2def8134e527:YUq24v3C0ecNkjZfpbeEeG6PTX6WwZY0"
+```
+
 ## Example
 
 ```sh
