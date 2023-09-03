@@ -178,7 +178,7 @@ print(Fore.GREEN +'\n'+"==================== INFORMACIÓN VULNERABILIDADES CRIMI
 
 payload={}
 headers = {
-  "x-api-key": "4rBsaZBcccqi4spbMfjROOs5UiQpgcKJZFdxRSWcR1Dti0euiHnhodmFHi4e"     #Añadir API
+  "x-api-key": ""     #Añadir API
 }
 
 url2 = "https://api.criminalip.io/v1/ip/data?ip="+ (host['ip_str']) +"&full=true"
@@ -208,7 +208,7 @@ params = {
     "verbose": ""
 }
 headers = {
-    "Key": "82b18f1be07ee74147bd3f864d901169fd1594558a0b84d9f9951eb744c10508f77a8a378b3cceda",     #Añadir API
+    "Key": "",     #Añadir API
     "Accept": "application/json"
 }
 
