@@ -46,33 +46,31 @@ def resolve_ip(domain):
         return "Inactive"
 
 url = f"https://crt.sh/?q={domain}&output=json"
-headers = {"User-Agent": "Mozilla/5.0"}  # User-Agent header to simulate a browser
+headers = {"User-Agent": "Mozilla/5.0"}  
 
 try:
     resp = requests.get(url, headers=headers).json()
-    active_hosts = set()  # Use sets to store unique subdomains for active and inactive hosts
+    active_hosts = set()
     inactive_hosts = set()
 
     for item in resp:
         subdomain = item['name_value']
-
-        # Filter unwanted and duplicate subdomains
         if domain in subdomain and not subdomain.startswith(f"*.{domain}"):
             if "*." not in subdomain:
                 try:
                     ip_address = resolve_ip(subdomain)
                     if ip_address != "Inactive":
-                        active_hosts.add((subdomain, ip_address))  # Add to the set for active hosts
+                        active_hosts.add((subdomain, ip_address))
                     else:
-                        inactive_hosts.add(subdomain)  # Add to the set for inactive hosts
+                        inactive_hosts.add(subdomain)
                 except Exception as e:
                     print(f"Error resolving {subdomain}: {e}")
 
-    print(Fore.GREEN + "-----------Active Hosts-----------" + Style.RESET_ALL)
+    print(Fore.GREEN + "\n-----------Active Hosts-----------" + Style.RESET_ALL)
     for subdomain, ip_address in active_hosts:
         print(f"{subdomain} {ip_address}")
 
-    print(Fore.GREEN + "\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
+    print(Fore.RED + "\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
     for subdomain in inactive_hosts:
         print(f"{subdomain}")
 
@@ -90,7 +88,7 @@ def resolve_ip(domain):
     except socket.gaierror:
         return "Inactive"
 
-censys_api_key = "6c0ac3d8-f989-4bdd-b2ab-2def8134e527:ezzyJDBHQRKLPlrDRHRo4AArYrvj7t3O"
+censys_api_key = "6c0xxxd8-fxx9-4xxd-bxxb-xxxxxxx27:OxxxxxxxxxxxxxxxxxYH" #Añadir API
 url2 = f"https://search.censys.io/api/v2/certificates/search?q=names={domain}"
 headers3 = {
     "Authorization": f"Basic {base64.b64encode(censys_api_key.encode()).decode()}"
@@ -118,17 +116,64 @@ if resp.status_code == 200:
         else:
             active_hosts.append((subdomain, ip_address))
 
-    print(Fore.GREEN +"-----------Active Hosts-----------" + Style.RESET_ALL)
+    print(Fore.GREEN +"\n------------Active Hosts-----------" + Style.RESET_ALL)
     for host, ip in active_hosts:
         print(f"{host} {ip}")
 
-    print(Fore.GREEN +"\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
+    print(Fore.RED +"\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
     for host, ip in inactive_hosts:
         print(f"{host} {ip}")
 else:
     print(f"Failed to retrieve data from Censys API. Status code: {resp.status_code}")
 
-#---------------------API SHODAN----------------------- 
+
+
+print(Fore.GREEN +'\n' + "===================HISTORICO SUBDOMINIOS CON ZOOM EYES================" + '\n' + Style.RESET_ALL)
+
+def resolve_ip(domain):
+    try:
+        ip_address = socket.gethostbyname(domain)
+        return ip_address
+    except socket.gaierror as e:
+        return None  
+
+api_url = f'https://api.zoomeye.hk/domain/search?q={domain}&type=1&page=1'
+api_key = '' #Añadir API
+headers = {'API-KEY': api_key, 'User-Agent': 'Mozilla/5.0'}
+
+try:
+    response = requests.get(api_url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        status = data.get("status", None)
+        total = data.get("total", 0)
+        domain_list = data.get("list", [])
+        
+        active_hosts = []  
+        inactive_hosts = []  
+
+        for item in domain_list:
+            name = item.get("name", "")
+            ips = item.get("ip", [])
+            print(name, ips)
+            
+            ip_address = resolve_ip(name)
+            if ip_address is not None:
+                active_hosts.append((name, ip_address))
+            else:
+                inactive_hosts.append(name)
+
+        print(Fore.GREEN + "\n-----------Active Hosts-----------" + Style.RESET_ALL)
+        for subdomain, ip_address in active_hosts:
+            print(f"{subdomain} {ip_address}")
+
+        print(Fore.RED + "\n-----------Inactive Hosts-----------" + Style.RESET_ALL)
+        for subdomain in inactive_hosts:
+            print(f"{subdomain}")
+    else:
+        print(f"Error en la solicitud: {response.status_code}")
+except requests.RequestException as e:
+    print(f"Error haciendo la solicitud: {e}")
 
 print(Fore.GREEN +'\n'+"Recopilación de información con shodan"+'\n'+ Style.RESET_ALL)
 
@@ -229,8 +274,8 @@ headers = {
 url = "https://api.proxynova.com/comb"
 query = {"query": domain}
 
-MAX_RETRIES = 3  # Número máximo de reintentos
-RETRY_DELAY = 5  # Tiempo de espera en segundos antes de reintentar
+MAX_RETRIES = 3  
+RETRY_DELAY = 5  
 
 for _ in range(MAX_RETRIES):
     response = requests.get(url, params=query, headers=headers)
@@ -238,12 +283,12 @@ for _ in range(MAX_RETRIES):
     if response.status_code == 200:
         data = response.json()
         print(json.dumps(data, indent=4))
-        break  # Romper el bucle si la solicitud es exitosa
+        break 
     elif response.status_code == 429:
         print("Recibido el código 429 - Demasiadas solicitudes. Esperando y reintentando...")
         time.sleep(RETRY_DELAY)  # Esperar antes de reintentar
     else:
         print("Error en la solicitud:", response.status_code)
-        break  # Romper el bucle en otros casos de error
+        break 
 else:
     print("Se agotaron los reintentos. No se pudo obtener una respuesta exitosa.")
