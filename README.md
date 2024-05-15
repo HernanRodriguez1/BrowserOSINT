@@ -1,6 +1,6 @@
 # BrowserOSINT
 
-This script allows to enumerate and extract data from HACKERTARGET,CRT.SH, SHODAN,IPCRIMINAL, ABUSEIPDB, CENSYS from the enumeration phase of subdomains, services and possible CVE vulnerabilities,compromised emails, everything is used passively.
+This script allows to enumerate and extract data from HACKERTARGET,CRT.SH, SHODAN,IPCRIMINAL, ABUSEIPDB, CENSYS, ZOOMEYE from the enumeration phase of subdomains, services and possible CVE vulnerabilities,compromised emails, everything is used passively.
 
 ## Add API:
 
