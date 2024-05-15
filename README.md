@@ -19,6 +19,11 @@ https://search.censys.io/api/v2/certificates/search?q=names=
 censys_api_key = ""
 ```
 
+```sh
+api_url = f'https://api.zoomeye.hk/domain/search?q={domain}&type=1&page=1'
+api_key = ''
+```
+
 ## Example
 
 ```sh
