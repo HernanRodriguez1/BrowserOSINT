@@ -31,10 +31,5 @@ python3 BrowserOSINT.py --target www.target.com --Key xYtuQsB1IPNd3iEV7bSjVmHKUj
 ```
 posdata: Use you Key Shodan.
 
-![image](https://github.com/HernanRodriguez1/BrowserOSINT/assets/66162160/5c1a22cd-eeff-4908-8429-18edb0ff4d74)
 
-![2](https://github.com/HernanRodriguez1/BrowserOSINT/assets/66162160/0bd70380-05bf-48a4-9aff-ee498c994e51)
-
-![3](https://github.com/HernanRodriguez1/BrowserOSINT/assets/66162160/058c419f-740d-44aa-b19c-4e29b9c81078)
-
-![4](https://github.com/HernanRodriguez1/BrowserOSINT/assets/66162160/fe6f3018-8c81-4d60-a20b-8e698330fac7)
+https://github.com/HernanRodriguez1/BrowserOSINT/assets/66162160/8f15ad61-870d-43de-8ff5-c9c25d8c1d91
